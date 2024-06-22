@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:sampleapp/dashboard.dart';
+import 'package:sampleapp/Widgets/videoWidget.dart';
+
+import 'dashboard.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -30,6 +32,7 @@ class _LoginState extends State<Login> {
       child: Scaffold(
         body: Column(
           children: [
+            const Videowidget(videoUrl:'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4' ),
             _textview(),
             _button()
           ],
@@ -64,7 +67,7 @@ class _LoginState extends State<Login> {
       child: Center(
         child: Container(
           width: _deviceWidth * 0.85,
-          height: _deviceHeight * 0.3,
+          height: _deviceHeight * 0.2,
           child: TextFormField(
             controller: userName,
             decoration: const InputDecoration(
