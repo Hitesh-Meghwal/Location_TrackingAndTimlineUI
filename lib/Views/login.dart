@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sampleapp/Widgets/videoWidget.dart';
 
@@ -30,12 +31,18 @@ class _LoginState extends State<Login> {
     _deviceHeight = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
-        body: Column(
-          children: [
-            const Videowidget(videoUrl:'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4' ),
+        body: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: [
+               Container(
+                 width: _deviceWidth * 0.9,
+                   height: _deviceHeight * 0.48,
+                   child: SvgPicture.asset("assets/image/appLogo.svg")),
             _textview(),
-            _button()
-          ],
+              _button()
+               ],
+          ),
         ),
       ),
     );
@@ -62,28 +69,25 @@ class _LoginState extends State<Login> {
   }
 
   Widget _textview() {
-    return Padding(
-      padding: EdgeInsets.only(top: _deviceHeight * 0.2),
-      child: Center(
-        child: Container(
-          width: _deviceWidth * 0.85,
-          height: _deviceHeight * 0.2,
-          child: TextFormField(
-            controller: userName,
-            decoration: const InputDecoration(
-              enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green)
-              ),
-              focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green)
-              ),
-              suffixIcon: Icon(
-                Icons.email,
-                color: Colors.grey,
-              ),
-              labelText: 'UserName',
-              labelStyle: TextStyle(color: Colors.green),
+    return Center(
+      child: Container(
+        width: _deviceWidth * 0.85,
+        height: _deviceHeight * 0.1,
+        child: TextFormField(
+          controller: userName,
+          decoration: const InputDecoration(
+            enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.green)
             ),
+            focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.green)
+            ),
+            suffixIcon: Icon(
+              Icons.email,
+              color: Colors.grey,
+            ),
+            labelText: 'UserName',
+            labelStyle: TextStyle(color: Colors.green),
           ),
         ),
       ),
@@ -91,47 +95,53 @@ class _LoginState extends State<Login> {
   }
 
   Widget _button() {
-    return ElevatedButton(
-      child: Text(
-        "Submit",
-        style: TextStyle(
-            color: Colors.green,
-            fontSize: 19,
-            fontWeight: FontWeight.w500
+    return Padding(
+      padding: EdgeInsets.only(left: _deviceWidth * 0.5),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[300]
         ),
-      ),
-      onPressed: () {
-        if (userName.text.isNotEmpty) {
-          String timestamp = DateTime.now().toString();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Dashboard(
-                userName: userName.text,
-                timeStamp: timestamp,
-                currentPos: _currentPosition
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Please enter Username to proceed",
-                style: TextStyle(
-                    fontSize: _deviceWidth * 0.03,
-                    color: Colors.green
+        child: const Text(
+          "Submit",
+          style: TextStyle(
+              color: Colors.green,
+              fontSize: 19,
+              fontWeight: FontWeight.w500
+          ),
+        ),
+        onPressed: () {
+          if (userName.text.isNotEmpty) {
+            String timestamp = DateTime.now().toString();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Dashboard(
+                  userName: userName.text,
+                  timeStamp: timestamp,
+                  currentPos: _currentPosition
                 ),
               ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Please enter Username to proceed",
+                  style: TextStyle(
+                      fontSize: _deviceWidth * 0.03,
+                      color: Colors.green
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)
+                ),
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 2),
               ),
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      },
+            );
+          }
+        },
+      ),
     );
   }
 }
