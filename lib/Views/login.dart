@@ -31,6 +31,7 @@ class _LoginState extends State<Login> {
     _deviceHeight = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
@@ -79,7 +80,7 @@ class _LoginState extends State<Login> {
             enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.green)
             ),
-            focusedBorder: UnderlineInputBorder(
+            focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.green)
             ),
             suffixIcon: Icon(
@@ -99,7 +100,7 @@ class _LoginState extends State<Login> {
       padding: EdgeInsets.only(left: _deviceWidth * 0.5),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[300]
+          backgroundColor: Colors.grey[200]
         ),
         child: const Text(
           "Submit",
