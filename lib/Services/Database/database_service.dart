@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
@@ -30,6 +32,7 @@ class DatabaseService {
     //open database
     final database = await openDatabase(
       databasePath,
+      version: 1,
       onCreate: (db,version){
         db.execute(
             """
@@ -43,5 +46,15 @@ class DatabaseService {
       }
     );
     return database;
+  }
+
+  // adding user to db
+  void addUser(String userName, String userLocation, String userTimeStamp) async {
+    final db = await database;
+    await db.insert(_userTableName, {
+      _userNameColName: userName,
+      _userLocationColName: userLocation,
+      _userTimestampColName: userTimeStamp
+    });
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +21,9 @@ class _LoginState extends State<Login> {
 
   final DatabaseService _DatabaseService = DatabaseService.instance;
 
-  var userName = TextEditingController();
+  var userName = "";
   late double _deviceWidth, _deviceHeight;
-  late Position _currentPosition;
+  Position? _currentPosition;
   @override
   void initState() {
     super.initState();
@@ -70,7 +71,13 @@ class _LoginState extends State<Login> {
       return Future.error('Location permission are permanently denied');
     }
 
-    _currentPosition = await Geolocator.getCurrentPosition();
+    try{
+      _currentPosition = await Geolocator.getCurrentPosition();
+      setState(() {});
+    }
+    catch(e){
+      print("Failed to get location $e");
+    }
   }
 
   Widget _textview() {
@@ -79,7 +86,6 @@ class _LoginState extends State<Login> {
         width: _deviceWidth * 0.85,
         height: _deviceHeight * 0.1,
         child: TextFormField(
-          controller: userName,
           decoration: const InputDecoration(
             enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.green)
@@ -94,6 +100,9 @@ class _LoginState extends State<Login> {
             labelText: 'UserName',
             labelStyle: TextStyle(color: Colors.green),
           ),
+          onChanged: (value){
+            userName = value;
+          },
         ),
       ),
     );
@@ -115,18 +124,14 @@ class _LoginState extends State<Login> {
           ),
         ),
         onPressed: () {
-          if (userName.text.isNotEmpty) {
-            String timestamp = DateTime.now().toString();
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Dashboard(
-                  userName: userName.text,
-                  timeStamp: timestamp,
-                  currentPos: _currentPosition
-                ),
-              ),
-            );
+          if (userName.isNotEmpty) {
+            if (_currentPosition != null){
+              String timestamp = DateTime.now().toString();
+              String positionString = "${_currentPosition!.latitude},${_currentPosition!.longitude}";
+              _DatabaseService.addUser(userName, positionString, timestamp);
+              print("Data added");
+              // Navigator.push(context, MaterialPageRoute(builder: (context) => Dashboard()));
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
