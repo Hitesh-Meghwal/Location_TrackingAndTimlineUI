@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:sampleapp/Services/Database/database_service.dart';
 import 'package:sampleapp/Widgets/videoWidget.dart';
 
 import 'dashboard.dart';
@@ -16,6 +17,9 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+
+  final DatabaseService _DatabaseService = DatabaseService.instance;
+
   var userName = TextEditingController();
   late double _deviceWidth, _deviceHeight;
   late Position _currentPosition;
