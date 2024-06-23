@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:ffi';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sampleapp/Services/Database/database_service.dart';
-import 'package:sampleapp/Widgets/videoWidget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dashboard.dart';

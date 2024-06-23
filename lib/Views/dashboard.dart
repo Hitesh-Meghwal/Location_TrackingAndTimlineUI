@@ -24,6 +24,7 @@ class _DashboardState extends State<Dashboard> {
 
   final DatabaseService _DatabaseService = DatabaseService.instance;
 
+
   late String _locationName = "";
   late String _userName = "";
   late String _timestamp = "";
