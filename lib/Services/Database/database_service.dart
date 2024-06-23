@@ -1,6 +1,8 @@
 import 'dart:ffi';
+import 'dart:math';
 
 import 'package:path/path.dart';
+import 'package:sampleapp/Models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqlite_api.dart';
 
@@ -56,5 +58,12 @@ class DatabaseService {
       _userLocationColName: userLocation,
       _userTimestampColName: userTimeStamp
     });
+  }
+
+  Future<List<User>> getUser() async {
+    final db = await database;
+    final data = await db.query(_userTableName);
+    List<User> user = data.map((e)=>User(e[_userNameColName] as String, e[_userLocationColName] as String, e[_userTimestampColName] as String)).toList();
+    return user;
   }
 }

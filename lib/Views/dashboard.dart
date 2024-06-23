@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:timelines/timelines.dart';
+import '../Models/user_model.dart';
+import '../Services/Database/database_service.dart';
 
 class Dashboard extends StatefulWidget {
-  final String userName;
-  final String timeStamp;
-  final Position currentPos;
 
-  const Dashboard({super.key, required this.userName, required this.timeStamp, required this.currentPos});
+  const Dashboard({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -18,13 +18,20 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+
+  final DatabaseService _DatabaseService = DatabaseService.instance;
+
+  late String _locationName = "";
+  late String _userName = "";
+  late String _timestamp = "";
+  late Position _currentPos;
   late double _deviceWidth, _deviceHeight;
-  late String _locationName = "" ;
+  List<User> _userTimeline = [];
 
   @override
   void initState() {
     super.initState();
-    _getLocationName();
+    _getUserData();
   }
 
   @override
@@ -34,30 +41,53 @@ class _DashboardState extends State<Dashboard> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Welcome, ${widget.userName}'),
+          title: Text('Welcome, $_userName'),
         ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Current Timestamp: ${widget.timeStamp}',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            _showDetails(),
-          ],
+        body: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: [
+              // _showDetails(),
+              _timeLineUI(),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _getUserData() async {
+    final users = await _DatabaseService.getUser();
+    if(users.isNotEmpty){
+      final user = users.last;
+
+      setState(() {
+        _userName = user.userName;
+        _timestamp = user.userTimestamp;
+        final locationParts = user.userLocation.split(',');
+        _currentPos = Position(
+          latitude: double.parse(locationParts[0]),
+          longitude: double.parse(locationParts[1]),
+          timestamp: DateTime.now(),
+          accuracy: 0.0,
+          altitude: 0.0,
+          heading: 0.0,
+          speed: 0.0,
+          speedAccuracy: 0.0, altitudeAccuracy: 0.0, headingAccuracy: 0.0 ,
+        );
+        _userTimeline = users;
+      });
+
+      _getLocationName();
+    }
   }
 
 
   Future<void> _getLocationName() async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        widget.currentPos.latitude,
-        widget.currentPos.longitude,
+        _currentPos.latitude,
+        _currentPos.longitude,
       );
       Placemark placemark = placemarks.first;
       setState(() {
@@ -68,77 +98,24 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  Widget _showDetails() {
-    String locationText = 'Latitude: ${widget.currentPos.latitude}, Longitude: ${widget.currentPos.longitude}';
-    return Padding(
-      padding: EdgeInsets.only(top: _deviceHeight * 0.2,),
-      child: Container(
-        child: Table(
-          defaultColumnWidth: FixedColumnWidth(120),
-          border: TableBorder.all(
-            color: Colors.black,
-            style: BorderStyle.solid,
-            width: 2,
-          ),
-          children: [
-            const TableRow(
-              children: [
-                Center(
-                  child: Text(
-                    "Name",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    "Time",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    "Location",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            TableRow(
-              children: [
-                Center(
-                  child: Text(
-                    widget.userName,
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    widget.timeStamp,
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    locationText,
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+
+  Widget _timeLineUI(){
+    return FixedTimeline.tileBuilder(
+      builder: TimelineTileBuilder.connectedFromStyle(
+        contentsAlign: ContentsAlign.alternating,
+        oppositeContentsBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.all(28.0),
+          child: Text('$_userName\n $_timestamp'),
         ),
+        contentsBuilder: (context, index) => Card(
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Text(_locationName),
+          ),
+        ),
+        connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
+        indicatorStyleBuilder: (context, index) => IndicatorStyle.dot,
+        itemCount: _userTimeline.length ,
       ),
     );
   }

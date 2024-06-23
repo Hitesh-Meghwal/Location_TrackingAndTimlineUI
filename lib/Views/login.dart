@@ -130,7 +130,7 @@ class _LoginState extends State<Login> {
               String positionString = "${_currentPosition!.latitude},${_currentPosition!.longitude}";
               _DatabaseService.addUser(userName, positionString, timestamp);
               print("Data added");
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => Dashboard()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const Dashboard()));
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -146,7 +146,7 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(15)
                 ),
                 behavior: SnackBarBehavior.floating,
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
               ),
             );
           }
