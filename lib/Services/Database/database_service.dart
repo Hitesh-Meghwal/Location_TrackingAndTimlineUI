@@ -60,9 +60,13 @@ class DatabaseService {
     });
   }
 
-  Future<List<User>> getUser() async {
+  Future<List<User>> getUserByUsername(String userName) async {
     final db = await database;
-    final data = await db.query(_userTableName);
+    final data = await db.query(_userTableName,
+    where: "$_userNameColName = ?",
+      whereArgs: [userName],
+    );
+
     List<User> user = data.map((e)=>User(e[_userNameColName] as String, e[_userLocationColName] as String, e[_userTimestampColName] as String)).toList();
     return user;
   }

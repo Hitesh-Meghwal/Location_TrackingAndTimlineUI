@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sampleapp/Services/Database/database_service.dart';
 import 'package:sampleapp/Widgets/videoWidget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dashboard.dart';
 
@@ -24,10 +25,48 @@ class _LoginState extends State<Login> {
   var userName = "";
   late double _deviceWidth, _deviceHeight;
   Position? _currentPosition;
+
+
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus();
     _geoLocator();
+  }
+
+  _geoLocator() async{
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if(!serviceEnabled){
+      return Future.error('Location Services are disabled');
+    }
+    LocationPermission permission = await Geolocator.checkPermission();
+    if(permission == LocationPermission.denied){
+      permission = await Geolocator.requestPermission();
+      if(permission == LocationPermission.denied){
+        return Future.error('Location permission are denied');
+      }
+    }
+
+    if(permission == LocationPermission.deniedForever){
+      return Future.error('Location permission are permanently denied');
+    }
+
+    try{
+      _currentPosition = await Geolocator.getCurrentPosition();
+      setState(() {});
+    }
+    catch(e){
+      print("Failed to get location $e");
+    }
+  }
+
+  _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? isLoggedIn = prefs.getBool('isLoggedIn');
+    String? savedUserName = prefs.getString('username');
+    if (isLoggedIn != null && isLoggedIn && savedUserName != null){
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> Dashboard(username: savedUserName)));
+    }
   }
 
   @override
@@ -52,32 +91,6 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
-  }
-
-  _geoLocator() async{
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if(!serviceEnabled){
-      return Future.error('Location Services are disabled');
-    }
-    LocationPermission permission = await Geolocator.checkPermission();
-    if(permission == LocationPermission.denied){
-      permission = await Geolocator.requestPermission();
-      if(permission == LocationPermission.denied){
-        return Future.error('Location permission are denied');
-      }
-    }
-    
-    if(permission == LocationPermission.deniedForever){
-      return Future.error('Location permission are permanently denied');
-    }
-
-    try{
-      _currentPosition = await Geolocator.getCurrentPosition();
-      setState(() {});
-    }
-    catch(e){
-      print("Failed to get location $e");
-    }
   }
 
   Widget _textview() {
@@ -108,6 +121,7 @@ class _LoginState extends State<Login> {
     );
   }
 
+
   Widget _button() {
     return Padding(
       padding: EdgeInsets.only(left: _deviceWidth * 0.5),
@@ -123,14 +137,18 @@ class _LoginState extends State<Login> {
               fontWeight: FontWeight.w500
           ),
         ),
-        onPressed: () {
+        onPressed: ()  async {
           if (userName.isNotEmpty) {
             if (_currentPosition != null){
               String timestamp = DateTime.now().toString();
               String positionString = "${_currentPosition!.latitude},${_currentPosition!.longitude}";
-              _DatabaseService.addUser(userName, positionString, timestamp);
+              _DatabaseService.addUser(userName.trim(), positionString, timestamp);
               print("Data added");
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const Dashboard()));
+              // Set login status and username in shared preferences
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
+              await prefs.setString('username', userName);
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard(username:userName)));
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(

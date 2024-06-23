@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:sampleapp/Views/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timelines/timelines.dart';
 import '../Models/user_model.dart';
 import '../Services/Database/database_service.dart';
 
 class Dashboard extends StatefulWidget {
 
-  const Dashboard({super.key});
+  final String username;
+  const Dashboard({super.key, required this.username});
 
   @override
   State<StatefulWidget> createState() {
@@ -24,7 +27,6 @@ class _DashboardState extends State<Dashboard> {
   late String _locationName = "";
   late String _userName = "";
   late String _timestamp = "";
-  late Position _currentPos;
   late double _deviceWidth, _deviceHeight;
   List<User> _userTimeline = [];
 
@@ -42,12 +44,19 @@ class _DashboardState extends State<Dashboard> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('Welcome, $_userName'),
+          actions: [
+            IconButton(onPressed: ()  async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> Login()));
+            },
+                icon: Icon(Icons.logout))
+          ],
         ),
         body: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
             children: [
-              // _showDetails(),
               _timeLineUI(),
             ],
           ),
@@ -57,15 +66,21 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> _getUserData() async {
-    final users = await _DatabaseService.getUser();
-    if(users.isNotEmpty){
-      final user = users.last;
-
+    final users = await _DatabaseService.getUserByUsername(widget.username);
+    if (users.isNotEmpty) {
       setState(() {
-        _userName = user.userName;
-        _timestamp = user.userTimestamp;
+        _userName = users.first.userName;
+        _userTimeline = users;
+      });
+      _getLocationNames();
+    }
+  }
+
+  Future<void> _getLocationNames() async {
+    try {
+      for (var user in _userTimeline) {
         final locationParts = user.userLocation.split(',');
-        _currentPos = Position(
+        final position = Position(
           latitude: double.parse(locationParts[0]),
           longitude: double.parse(locationParts[1]),
           timestamp: DateTime.now(),
@@ -73,49 +88,41 @@ class _DashboardState extends State<Dashboard> {
           altitude: 0.0,
           heading: 0.0,
           speed: 0.0,
-          speedAccuracy: 0.0, altitudeAccuracy: 0.0, headingAccuracy: 0.0 ,
+          speedAccuracy: 0.0,
+          altitudeAccuracy: 0.0,
+          headingAccuracy: 0.0,
         );
-        _userTimeline = users;
-      });
-
-      _getLocationName();
-    }
-  }
-
-
-  Future<void> _getLocationName() async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        _currentPos.latitude,
-        _currentPos.longitude,
-      );
-      Placemark placemark = placemarks.first;
-      setState(() {
-        _locationName = placemark.name ?? '';
-      });
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        Placemark placemark = placemarks.first;
+        setState(() {
+          _locationName = placemark.locality ?? placemark.administrativeArea ?? 'Unknown Location';
+        });
+      }
     } catch (e) {
-      print('Error getting location name: $e');
+      print('Error getting location names: $e');
     }
   }
 
-
-  Widget _timeLineUI(){
+  Widget _timeLineUI() {
     return FixedTimeline.tileBuilder(
       builder: TimelineTileBuilder.connectedFromStyle(
         contentsAlign: ContentsAlign.alternating,
         oppositeContentsBuilder: (context, index) => Padding(
           padding: const EdgeInsets.all(28.0),
-          child: Text('$_userName\n $_timestamp'),
+          child: Text('${_userTimeline[index].userName}\n ${_userTimeline[index].userTimestamp}'),
         ),
         contentsBuilder: (context, index) => Card(
           child: Padding(
             padding: const EdgeInsets.all(15),
-            child: Text(_locationName),
+            child: Text(_locationName ?? 'Loading...'),
           ),
         ),
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
         indicatorStyleBuilder: (context, index) => IndicatorStyle.dot,
-        itemCount: _userTimeline.length ,
+        itemCount: _userTimeline.length,
       ),
     );
   }
