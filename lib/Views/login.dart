@@ -37,6 +37,7 @@ class _LoginState extends State<Login> {
   _geoLocator() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      _showLocationServicesDialog();
       return Future.error('Location Services are disabled');
     }
     LocationPermission permission = await Geolocator.checkPermission();
@@ -58,6 +59,25 @@ class _LoginState extends State<Login> {
     } catch (e) {
       print("Failed to get location $e");
     }
+  }
+
+    void _showLocationServicesDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Location Services Disabled'),
+        content: const Text('Please enable location services to continue.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Geolocator.openLocationSettings();
+            },
+            child: Text('Enable'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _getLocationNames() async {
