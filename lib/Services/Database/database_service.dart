@@ -14,6 +14,7 @@ class DatabaseService {
   final String _userTableName = "UserLocation";
   final String _userIdColName = "Id";
   final String _userNameColName = "UserName";
+  final String _userLatlngColName = "LatLng";
   final String _userLocationColName = "Location";
   final String _userTimestampColName = "TimeStamp";
 
@@ -41,6 +42,7 @@ class DatabaseService {
             CREATE TABLE $_userTableName (
             $_userIdColName INTEGER PRIMARY KEY,
             $_userNameColName TEXT NOT NULL,
+            $_userLatlngColName TEXT,
             $_userLocationColName TEXT,
             $_userTimestampColName INTEGER
             )
@@ -51,10 +53,11 @@ class DatabaseService {
   }
 
   // adding user to db
-  void addUser(String userName, String userLocation, String userTimeStamp) async {
+  void addUser(String userName, String userLatlng, String userLocation, String userTimeStamp) async {
     final db = await database;
     await db.insert(_userTableName, {
       _userNameColName: userName,
+      _userLatlngColName: userLatlng ,
       _userLocationColName: userLocation,
       _userTimestampColName: userTimeStamp
     });
@@ -67,7 +70,7 @@ class DatabaseService {
       whereArgs: [userName],
     );
 
-    List<User> user = data.map((e)=>User(e[_userNameColName] as String, e[_userLocationColName] as String, e[_userTimestampColName] as String)).toList();
+    List<User> user = data.map((e)=>User(e[_userNameColName] as String, e[_userLatlngColName] as String, e[_userLocationColName] as String, e[_userTimestampColName] as String)).toList();
     return user;
   }
 }

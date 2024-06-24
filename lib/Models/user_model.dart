@@ -1,5 +1,5 @@
 class User {
-  final String userName, userLocation, userTimestamp;
+  final String userName, userlatLng, userLocation, userTimestamp;
 
-  User(this.userName, this.userLocation, this.userTimestamp);
+  User(this.userName, this.userlatLng, this.userLocation, this.userTimestamp);
 }

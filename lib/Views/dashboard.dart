@@ -9,8 +9,8 @@ import '../Models/user_model.dart';
 import '../Services/Database/database_service.dart';
 
 class Dashboard extends StatefulWidget {
-
   final String username;
+
   const Dashboard({super.key, required this.username});
 
   @override
@@ -20,12 +20,9 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-
   final DatabaseService _DatabaseService = DatabaseService.instance;
 
-  late String _locationName = "";
   late String _userName = "";
-  late String _timestamp = "";
   late double _deviceWidth, _deviceHeight;
   List<User> _userTimeline = [];
 
@@ -33,7 +30,6 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     _getUserData();
-    // _getLocationNames();
   }
 
   @override
@@ -45,12 +41,15 @@ class _DashboardState extends State<Dashboard> {
         appBar: AppBar(
           title: Text('Welcome, $_userName'),
           actions: [
-            IconButton(onPressed: ()  async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.clear();
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> Login()));
-            },
-                icon: const Icon(Icons.logout))
+            IconButton(
+              onPressed: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+                Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (context) => Login()));
+              },
+              icon: const Icon(Icons.logout),
+            ),
           ],
         ),
         body: SingleChildScrollView(
@@ -81,18 +80,33 @@ class _DashboardState extends State<Dashboard> {
         contentsAlign: ContentsAlign.alternating,
         oppositeContentsBuilder: (context, index) => Padding(
           padding: const EdgeInsets.all(28.0),
-          child: Text('${_userTimeline[index].userName}\n ${_userTimeline[index].userTimestamp}'),
+          child: Text(
+              '${_userTimeline[index].userName}\n ${_userTimeline[index].userTimestamp}'),
         ),
         contentsBuilder: (context, index) => GestureDetector(
-          onTap: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => GoogleMapScreen()));
+          onTap: () {
+            final userLocation = _userTimeline[index].userlatLng;
+            if (userLocation.isNotEmpty) {
+              final latlng = userLocation.split(",");
+              final latitude = double.parse(latlng[0]);
+              final longitude = double.parse(latlng[1]);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GoogleMapScreen(
+                    latitude: latitude,
+                    longitude: longitude,
+                  ),
+                ),
+              );
+            }
           },
           child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(15),
-            child: Text(_userTimeline[index].userLocation ?? 'Loading...'),
+            child: Padding(
+              padding: const EdgeInsets.all(15),
+              child: Text(_userTimeline[index].userLocation ?? 'Loading...'),
+            ),
           ),
-        ),
         ),
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
         indicatorStyleBuilder: (context, index) => IndicatorStyle.dot,

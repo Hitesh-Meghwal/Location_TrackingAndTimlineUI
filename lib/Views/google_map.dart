@@ -1,16 +1,31 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:sampleapp/Models/user_model.dart';
+import 'package:sampleapp/Services/Database/database_service.dart';
 
 class GoogleMapScreen extends StatefulWidget {
-  const GoogleMapScreen({super.key});
+  final double latitude;
+  final double longitude;
+
+  const GoogleMapScreen({
+    super.key,
+    required this.latitude,
+    required this.longitude,
+  });
 
   @override
   State<GoogleMapScreen> createState() => _GoogleMapScreenState();
 }
 
 class _GoogleMapScreenState extends State<GoogleMapScreen> {
-  final LatLng _center = const LatLng(19.076090, 72.877426); // Coordinates for Mumbai
+  late LatLng _currentLocation;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentLocation = LatLng(widget.latitude, widget.longitude);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,19 +36,14 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
           height: double.infinity,
           child: GoogleMap(
             initialCameraPosition: CameraPosition(
-              target: _center,
+              target: _currentLocation,
               zoom: 10,
             ),
             markers: {
               Marker(
-                markerId: MarkerId("_previousLocation"),
+                markerId: const MarkerId("_currentLocation"),
                 icon: BitmapDescriptor.defaultMarker,
-                position: _center,
-              ),
-              Marker(
-                markerId: MarkerId("_currentLocation"),
-                icon: BitmapDescriptor.defaultMarker,
-                position: _center,
+                position: _currentLocation,
               ),
             },
           ),

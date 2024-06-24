@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:sampleapp/Models/user_model.dart';
 import 'package:sampleapp/Services/Database/database_service.dart';
+import 'package:sampleapp/Views/google_map.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dashboard.dart';
 
@@ -153,10 +154,11 @@ class _LoginState extends State<Login> {
         onPressed: () async {
           if (userName.isNotEmpty) {
             if (_currentPosition != null) {
+              await _geoLocator();
               String timestamp = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()).toString();
-              // String positionString = "${_currentPosition!.latitude},${_currentPosition!.longitude}";
+              String positionString = "${_currentPosition!.latitude},${_currentPosition!.longitude}";
               _DatabaseService.addUser(
-                  userName.trim(), _locationName, timestamp);
+                  userName.trim(), positionString, _locationName, timestamp);
               print("Data added");
               // Set login status and username in shared preferences
               SharedPreferences prefs = await SharedPreferences.getInstance();
