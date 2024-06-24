@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sampleapp/Views/google_map.dart';
 import 'package:sampleapp/Views/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timelines/timelines.dart';
@@ -82,11 +83,16 @@ class _DashboardState extends State<Dashboard> {
           padding: const EdgeInsets.all(28.0),
           child: Text('${_userTimeline[index].userName}\n ${_userTimeline[index].userTimestamp}'),
         ),
-        contentsBuilder: (context, index) => Card(
+        contentsBuilder: (context, index) => GestureDetector(
+          onTap: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => GoogleMapScreen()));
+          },
+          child: Card(
           child: Padding(
             padding: const EdgeInsets.all(15),
             child: Text(_userTimeline[index].userLocation ?? 'Loading...'),
           ),
+        ),
         ),
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
         indicatorStyleBuilder: (context, index) => IndicatorStyle.dot,
