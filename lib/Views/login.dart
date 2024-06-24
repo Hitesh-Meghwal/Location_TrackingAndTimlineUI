@@ -73,7 +73,7 @@ class _LoginState extends State<Login> {
               Navigator.of(context).pop();
               Geolocator.openLocationSettings();
             },
-            child: Text('Enable'),
+            child: const Text('Enable'),
           ),
         ],
       ),
