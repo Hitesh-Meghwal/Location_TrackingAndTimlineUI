@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:sampleapp/Views/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timelines/timelines.dart';
@@ -24,7 +22,6 @@ class _DashboardState extends State<Dashboard> {
 
   final DatabaseService _DatabaseService = DatabaseService.instance;
 
-
   late String _locationName = "";
   late String _userName = "";
   late String _timestamp = "";
@@ -35,6 +32,7 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     _getUserData();
+    // _getLocationNames();
   }
 
   @override
@@ -51,7 +49,7 @@ class _DashboardState extends State<Dashboard> {
               await prefs.clear();
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> Login()));
             },
-                icon: Icon(Icons.logout))
+                icon: const Icon(Icons.logout))
           ],
         ),
         body: SingleChildScrollView(
@@ -73,37 +71,6 @@ class _DashboardState extends State<Dashboard> {
         _userName = users.first.userName;
         _userTimeline = users;
       });
-      _getLocationNames();
-    }
-  }
-
-  Future<void> _getLocationNames() async {
-    try {
-      for (var user in _userTimeline) {
-        final locationParts = user.userLocation.split(',');
-        final position = Position(
-          latitude: double.parse(locationParts[0]),
-          longitude: double.parse(locationParts[1]),
-          timestamp: DateTime.now(),
-          accuracy: 0.0,
-          altitude: 0.0,
-          heading: 0.0,
-          speed: 0.0,
-          speedAccuracy: 0.0,
-          altitudeAccuracy: 0.0,
-          headingAccuracy: 0.0,
-        );
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-          position.latitude,
-          position.longitude,
-        );
-        Placemark placemark = placemarks.first;
-        setState(() {
-          _locationName = placemark.locality ?? placemark.administrativeArea ?? 'Unknown Location';
-        });
-      }
-    } catch (e) {
-      print('Error getting location names: $e');
     }
   }
 
@@ -118,7 +85,7 @@ class _DashboardState extends State<Dashboard> {
         contentsBuilder: (context, index) => Card(
           child: Padding(
             padding: const EdgeInsets.all(15),
-            child: Text(_locationName ?? 'Loading...'),
+            child: Text(_userTimeline[index].userLocation ?? 'Loading...'),
           ),
         ),
         connectorStyleBuilder: (context, index) => ConnectorStyle.solidLine,
